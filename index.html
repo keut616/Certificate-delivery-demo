@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ລະບົບບໍລິຫານ ແລະ ຈຳລອງພິທີມອບໃບປະກາດ (ລຳດັບ 2-61)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Noto Sans Lao', sans-serif; background-color: #F8FAFC; color: #1E293B; }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        .seat-grid {
+            display: grid;
+            grid-template-columns: repeat(10, minmax(0, 1fr));
+            gap: 0.25rem;
+        }
+        
+        .seat {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .seat-pending { background-color: #E2E8F0; color: #64748B; }
+        .seat-standby { background-color: #FBBF24; color: #78350F; animation: pulse 2s infinite; }
+        .seat-completed { background-color: #10B981; color: #FFFFFF; }
+        .seat-active { background-color: #3B82F6; color: #FFFFFF; transform: scale(1.1); z-index: 10; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        /* ລະບົບເອນິເມຊັ້ນຄົນຍ່າງ */
+        @keyframes walkAcross {
+            0% { left: 10%; bottom: -10px; opacity: 0; transform: translateX(-50%) scale(0.8); }
+            15% { left: 15%; bottom: 30px; opacity: 1; transform: translateX(-50%) scale(1); }
+            40% { left: 50%; bottom: 30px; opacity: 1; transform: translateX(-50%) scale(1.2); }
+            60% { left: 50%; bottom: 30px; opacity: 1; transform: translateX(-50%) scale(1.2); }
+            85% { left: 85%; bottom: 30px; opacity: 1; transform: translateX(-50%) scale(1); }
+            100% { left: 90%; bottom: -10px; opacity: 0; transform: translateX(-50%) scale(0.8); }
+        }
+
+        .animate-walk {
+            animation: walkAcross 3s ease-in-out forwards;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="min-h-screen custom-scrollbar">
+
+    <nav class="bg-slate-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <span class="text-2xl">🎓</span>
+                    <h1 class="font-bold text-xl tracking-wide">ລະບົບບໍລິຫານພິທີມອບໃບປະກາດ (ລຳດັບ 2-61)</h1>
+                </div>
+                <div class="text-sm bg-slate-700 px-3 py-1 rounded-full text-slate-300">
+                    ⏱️ ເວລາຄາດຄະເນ: 10-15 ນາທີ
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 border border-slate-200">
+            <h2 class="text-xl font-bold text-slate-800 mb-2">ພາບລວມຂອງແອັບພລິເຄຊັນ (Overview)</h2>
+            <p class="text-slate-600 leading-relaxed">
+                ແອັບພລິເຄຊັນນີ້ຖືກອອກແບບມາເພື່ອປ່ຽນ "ແຜນການຈຳລອງ" ໃຫ້ເປັນເຄື່ອງມືຈັດການແບບໂຕ້ຕອບ. ຈຸດປະສົງຫຼັກແມ່ນເພື່ອໃຫ້ຜູ້ອຳນວຍຄວາມສະດວກສາມາດເຫັນພາບລວມຂອງການຈັດຕັ້ງບ່ອນນັ່ງ, ເຂົ້າໃຈຂັ້ນຕອນການກະກຽມ, ແລະ ສາມາດ <b>ຈຳລອງການຍ່າງຂຶ້ນຮັບໃບປະກາດຕົວຈິງ (Simulator)</b> ເພື່ອໃຫ້ໝັ້ນໃຈວ່າພິທີຈະດຳເນີນໄປຢ່າງລ່ຽນໄຫຼ, ສວຍງາມ, ແລະ ບໍ່ມີການຕິດຂັດພາຍໃນເວລາທີ່ກຳນົດໄວ້.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <div class="lg:col-span-4 flex flex-col space-y-6">
+                
+                <div class="bg-white rounded-xl shadow-sm p-6 border-t-4 border-slate-500">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center"><span class="mr-2">📋</span> ຂັ້ນຕອນການກະກຽມ (Preparation)</h3>
+                    <p class="text-sm text-slate-500 mb-4">ຄລິກໃສ່ແຕ່ລະຫົວຂໍ້ເພື່ອອ່ານລາຍລະອຽດກະຕິກາ ແລະ ສິ່ງທີ່ຕ້ອງກຽມກ່ອນງານເລີ່ມ.</p>
+                    
+                    <div class="space-y-3">
+                        <button class="accordion-btn w-full text-left bg-slate-50 hover:bg-slate-100 p-4 rounded-lg font-semibold text-slate-700 flex justify-between items-center transition-colors">
+                            ບາດກ້າວທີ 1: ການຈັດຕັ້ງບ່ອນນັ່ງ <span>➕</span>
+                        </button>
+                        <div class="accordion-content hidden px-4 py-3 bg-white text-sm text-slate-600 border-l-2 border-slate-300 ml-2">
+                            <ul class="list-disc pl-4 space-y-2">
+                                <li><b>VIP Zone:</b> ຈັດຕັ່ງຢູ່ດ້ານໜ້າສຸດສຳລັບຜູ້ຮັບທັງໝົດ 60 ທ່ານ (ເລີ່ມຈາກໝາຍເລກ 2).</li>
+                                <li><b>ການແບ່ງແຖວ:</b> ແບ່ງເປັນ 6 ແຖວ (ແຖວລະ 10 ຕັ່ງພໍດີ).</li>
+                                <li><b>ຕິດຊື່ໃສ່ຕັ່ງ:</b> ຕິດປ້າຍຊື່ ແລະ ລຳດັບທີ (2-61) ເພື່ອບັງຄັບການນັ່ງຕາມລຳດັບຢ່າງເຂັ້ມງວດ (ບໍ່ມີເລກ 1).</li>
+                            </ul>
+                        </div>
+
+                        <button class="accordion-btn w-full text-left bg-slate-50 hover:bg-slate-100 p-4 rounded-lg font-semibold text-slate-700 flex justify-between items-center transition-colors">
+                            ບາດກ້າວທີ 2: ການຊັກຊ້ອມຜູ້ຮັບ <span>➕</span>
+                        </button>
+                        <div class="accordion-content hidden px-4 py-3 bg-white text-sm text-slate-600 border-l-2 border-slate-300 ml-2">
+                            <ul class="list-disc pl-4 space-y-2">
+                                <li><b>ເສັ້ນທາງຍ່າງ:</b> ລຸກອອກທາງຂ້າງ ➡️ ຂຶ້ນເວທີຂັ້ນໄດຊ້າຍ ➡️ ຮັບໃບປະກາດ ➡️ ລົງຂັ້ນໄດຂວາ ➡️ ອ້ອມມານັ່ງບ່ອນເກົ່າ.</li>
+                                <li><b>ທ່າທາງການຮັບ:</b> ຮັບແລ້ວ ຫັນໜ້າເບິ່ງກ້ອງ 1 ວິນາທີ ກ່ອນຍ່າງລົງ ເພື່ອພາບທີ່ສວຍງາມ.</li>
+                            </ul>
+                        </div>
+
+                        <button class="accordion-btn w-full text-left bg-slate-50 hover:bg-slate-100 p-4 rounded-lg font-semibold text-slate-700 flex justify-between items-center transition-colors">
+                            ບາດກ້າວທີ 3: ກຽມໃບປະກາດ <span>➕</span>
+                        </button>
+                        <div class="accordion-content hidden px-4 py-3 bg-white text-sm text-slate-600 border-l-2 border-slate-300 ml-2">
+                            <ul class="list-disc pl-4 space-y-2">
+                                <li><b>ລຽງລຳດັບ:</b> 2-61 ໃຫ້ກົງກັບລາຍຊື່ທີ່ MC ຈະອ່ານ.</li>
+                                <li><b>ກໍລະນີຄົນຂາດ (ສຳຄັນ):</b> ຕ້ອງດຶງໃບປະກາດຂອງຄົນທີ່ຂາດອອກຈາກກອງທັນທີ! ປ້ອງກັນການມອບສະຫຼັບກັນ.</li>
+                            </ul>
+                        </div>
+
+                        <button class="accordion-btn w-full text-left bg-slate-50 hover:bg-slate-100 p-4 rounded-lg font-semibold text-slate-700 flex justify-between items-center transition-colors">
+                            ບາດກ້າວທີ 5: ຈົບພິທີການ <span>➕</span>
+                        </button>
+                        <div class="accordion-content hidden px-4 py-3 bg-white text-sm text-slate-600 border-l-2 border-slate-300 ml-2">
+                            <ul class="list-disc pl-4 space-y-2">
+                                <li>MC ກ່າວຂອບໃຈປະທານ.</li>
+                                <li>ຜູ້ຮັບທັງໝົດຕົບມືພ້ອມກັນສະຫຼອງຄວາມສຳເລັດ.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border-t-4 border-emerald-500">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 text-center">ສະຖານະການມອບ (Live Status)</h3>
+                    <div class="chart-container">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                    <div class="mt-4 flex justify-between text-sm font-semibold text-slate-600">
+                        <span>ສຳເລັດ: <span id="stat-completed" class="text-emerald-600">0</span></span>
+                        <span>ລໍຖ້າ: <span id="stat-pending" class="text-slate-400">60</span></span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="lg:col-span-8">
+                <div class="bg-white rounded-xl shadow-md p-6 lg:p-8 h-full border border-slate-200">
+                    
+                    <div class="mb-6 border-b pb-4">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">ບາດກ້າວທີ 4: ຈຳລອງການປະຕິບັດງານ (Execution Simulator)</h2>
+                        <p class="text-slate-600 text-sm">
+                            ພື້ນທີ່ນີ້ຈຳລອງການຍ່າງ ແລະ ການເຕີມແຖວ (Refilling the line). ກົດປຸ່ມ <b>"ເລີ່ມຕົ້ນ / ຄົນຕໍ່ໄປ"</b> ເພື່ອເບິ່ງການເຄື່ອນໄຫວ. ສີເຫຼືອງໝາຍເຖິງກຳລັງລໍຖ້າ (Standby) ເພື່ອບໍ່ໃຫ້ມີຊ່ວງເວລາຂາດຕອນ.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-8 relative overflow-hidden">
+                        
+                        <div class="flex justify-between items-center mb-8 relative z-10 min-h-[120px]">
+                            
+                            <!-- Track ສຳລັບເອນິເມຊັ້ນ -->
+                            <div id="animation-track" class="absolute inset-0 pointer-events-none z-50"></div>
+
+                            <div class="flex flex-col items-center justify-center bg-white p-3 rounded shadow-sm w-32 border border-slate-200 relative z-10">
+                                <span class="text-2xl mb-1">⬆️ 🚶‍♂️</span>
+                                <span class="text-xs font-bold text-slate-500">ຂັ້ນໄດຊ້າຍ (ທາງຂຶ້ນ)</span>
+                                <span class="text-[10px] text-slate-400">Staff 1 ຄຸມແຖວ</span>
+                            </div>
+                            
+                            <div class="flex-1 flex flex-col items-center justify-center px-4 relative z-10">
+                                <div class="w-full max-w-sm bg-blue-900 text-white text-center py-4 rounded-lg shadow-inner font-bold tracking-widest relative">
+                                    ເວທີ (STAGE)
+                                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-amber-500 text-white text-xs px-3 py-1 rounded-full">
+                                        ປະທານມອບ
+                                    </div>
+                                </div>
+                                <div id="current-person-display" class="mt-4 text-center">
+                                    <span class="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-bold text-lg shadow-sm border border-blue-200">
+                                        ລໍຖ້າເລີ່ມພິທີ...
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col items-center justify-center bg-white p-3 rounded shadow-sm w-32 border border-slate-200 relative z-10">
+                                <span class="text-2xl mb-1">🚶‍♂️ ⬇️</span>
+                                <span class="text-xs font-bold text-slate-500">ຂັ້ນໄດຂວາ (ທາງລົງ)</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-12 relative z-10">
+                            <h4 class="text-sm font-bold text-slate-700 mb-3 flex justify-between items-end">
+                                <span>ແຜນຜັງບ່ອນນັ່ງ (ລຳດັບ 2-61)</span>
+                                <div class="flex space-x-3 text-[10px] font-normal">
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-[#E2E8F0] inline-block mr-1 rounded"></span> ຍັງບໍ່ຮອດຄິວ</span>
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-[#FBBF24] inline-block mr-1 rounded"></span> Standby</span>
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-[#10B981] inline-block mr-1 rounded"></span> ສຳເລັດ</span>
+                                </div>
+                            </h4>
+                            
+                            <div id="seating-area" class="bg-white p-4 rounded-lg shadow-inner border border-slate-200 flex flex-col space-y-2 overflow-x-auto custom-scrollbar">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                        <button id="btn-next" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition active:scale-95 flex items-center text-lg w-full sm:w-auto justify-center">
+                            <span>▶️ ເລີ່ມຕົ້ນ / ເອີ້ນຄົນຕໍ່ໄປ</span>
+                        </button>
+                        <button id="btn-reset" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-8 rounded-full shadow transition w-full sm:w-auto justify-center">
+                            ຣີເຊັດ (Reset)
+                        </button>
+                    </div>
+                    
+                    <div class="mt-6 bg-blue-50 text-blue-800 p-4 rounded-lg text-sm border border-blue-100">
+                        <p><b>💡 ຄຳແນະນຳຈາກ Playbook:</b> ເມື່ອຄົນໃນແຖວລໍຖ້າ (Standby) ເຫຼືອປະມານ 5 ຄົນ, ຜູ້ຊ່ວຍຕ້ອງໃຫ້ສັນຍານແຖວຕໍ່ໄປລຸກຂຶ້ນທັນທີ! ລອງກົດປຸ່ມຂ້າງເທິງເພື່ອເບິ່ງລະບົບການເຕີມແຖວອັດຕະໂນມັດ.</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            const accordions = document.querySelectorAll('.accordion-btn');
+            accordions.forEach(acc => {
+                acc.addEventListener('click', function() {
+                    const content = this.nextElementSibling;
+                    const icon = this.querySelector('span');
+                    
+                    if (content.classList.contains('hidden')) {
+                        content.classList.remove('hidden');
+                        icon.textContent = '➖';
+                        this.classList.add('bg-slate-200');
+                    } else {
+                        content.classList.add('hidden');
+                        icon.textContent = '➕';
+                        this.classList.remove('bg-slate-200');
+                    }
+                });
+            });
+
+            // ຕັ້ງຄ່າຈຳນວນຄົນ ແລະ ລຳດັບ
+            const startNum = 2; // ເລີ່ມຈາກລຳດັບທີ 2
+            const endNum = 61;  // ສິ້ນສຸດທີ່ລຳດັບ 61
+            const totalPeople = endNum - startNum + 1; // ຄຳນວນຈຳນວນທັງໝົດ (60)
+            
+            let currentPersonNum = startNum; // ຕົວແປເກັບລຳດັບປະຈຸບັນ
+            let isStarted = false;           // ສະຖານະການເລີ່ມຕົ້ນ
+            
+            const seatsContainer = document.getElementById('seating-area');
+            const displayPerson = document.getElementById('current-person-display');
+            const statCompleted = document.getElementById('stat-completed');
+            const statPending = document.getElementById('stat-pending');
+            const btnNext = document.getElementById('btn-next');
+            const btnReset = document.getElementById('btn-reset');
+            
+            let seatElements = [];
+
+            function renderSeats() {
+                seatsContainer.innerHTML = '';
+                seatElements = [];
+                
+                let rowCount = 0;
+                let currentRowDiv = null;
+
+                for (let i = startNum; i <= endNum; i++) {
+                    let index = i - startNum; // ດັດສະນີ (0 ຫາ 60)
+                    
+                    // ຂຶ້ນແຖວໃໝ່ທຸກໆ 10 ຄົນ
+                    if (index % 10 === 0) {
+                        rowCount++;
+                        currentRowDiv = document.createElement('div');
+                        currentRowDiv.className = 'seat-grid relative';
+                        
+                        let rowLabel = document.createElement('div');
+                        rowLabel.className = 'absolute -left-10 top-1/2 transform -translate-y-1/2 text-[10px] font-bold text-slate-400 hidden sm:block';
+                        rowLabel.textContent = `ແຖວ ${rowCount}`;
+                        currentRowDiv.appendChild(rowLabel);
+                        
+                        seatsContainer.appendChild(currentRowDiv);
+                    }
+
+                    const seat = document.createElement('div');
+                    seat.className = 'seat seat-pending shadow-sm';
+                    seat.textContent = i; // ຂຽນລຳດັບທີ່ແທ້ຈິງໃສ່ຕັ່ງ (2, 3, 4...)
+                    seat.id = `seat-${i}`;
+                    
+                    seat.addEventListener('click', () => {
+                        alert(`ລຳດັບທີ ${i}: ຢູ່ໃນແຖວທີ ${Math.ceil((i - startNum + 1) / 10)}`);
+                    });
+
+                    currentRowDiv.appendChild(seat);
+                    seatElements.push(seat);
+                }
+            }
+
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            const progressChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['ສຳເລັດແລ້ວ', 'ລໍຖ້າ'],
+                    datasets: [{
+                        data: [0, totalPeople],
+                        backgroundColor: ['#10B981', '#E2E8F0'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { family: "'Noto Sans Lao', sans-serif" } } },
+                        tooltip: { bodyFont: { family: "'Noto Sans Lao', sans-serif" } }
+                    },
+                    animation: { animateScale: true, animateRotate: true }
+                }
+            });
+
+            // ຟັງຊັນສ້າງຄົນຍ່າງ
+            function spawnWalker(personNum) {
+                const track = document.getElementById('animation-track');
+                const walker = document.createElement('div');
+                walker.className = 'absolute animate-walk text-4xl drop-shadow-md flex flex-col items-center justify-center';
+                
+                // ຮູບແບບຂອງຄົນຍ່າງ ພ້ອມປ້າຍລຳດັບ
+                walker.innerHTML = `
+                    <div class="bg-blue-600 text-white text-[11px] font-bold rounded-full h-6 w-6 flex items-center justify-center mb-1 border-2 border-white shadow-sm">
+                        ${personNum}
+                    </div>
+                    👨‍🎓
+                `;
+                
+                track.appendChild(walker);
+                
+                // ລຶບຄົນຍ່າງອອກຈາກໜ້າຈໍຫຼັງຈາກຍ່າງຈົບ (3 ວິນາທີ)
+                setTimeout(() => {
+                    if(track.contains(walker)) {
+                        walker.remove();
+                    }
+                }, 3000);
+            }
+
+            function updateUI() {
+                seatElements.forEach((seat, index) => {
+                    const personNum = startNum + index; // ລຳດັບແທ້ຈິງຂອງຄົນນັ່ງ (2, 3...)
+                    seat.className = 'seat shadow-sm'; 
+
+                    if (personNum < currentPersonNum) {
+                        // ຖ້າຜ່ານໄປແລ້ວ (Completed)
+                        seat.classList.add('seat-completed');
+                    } else if (personNum === currentPersonNum && isStarted) {
+                        // ຄົນທີ່ກຳລັງຂຶ້ນຮັບ (Active)
+                        seat.classList.add('seat-active');
+                    } else if (
+                        (isStarted && personNum > currentPersonNum && personNum <= currentPersonNum + 9) ||
+                        (!isStarted && personNum >= startNum && personNum <= startNum + 9)
+                    ) {
+                        // ແຖວລໍຖ້າ (Standby) - ເຮັດໃຫ້ 10 ຄົນຕໍ່ໄປເປັນສີເຫຼືອງ
+                        seat.classList.add('seat-standby');
+                    } else {
+                        // ຍັງບໍ່ຮອດຄິວ (Pending)
+                        seat.classList.add('seat-pending');
+                    }
+                });
+
+                if (!isStarted) {
+                    displayPerson.innerHTML = `<span class="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-bold text-lg shadow-sm border border-blue-200">ລໍຖ້າເລີ່ມພິທີ (ເລີ່ມຈາກໝາຍເລກ ${startNum})...</span>`;
+                } else if (currentPersonNum <= endNum) {
+                    displayPerson.innerHTML = `
+                        <span class="inline-block bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-xl shadow-lg">
+                            ກຳລັງມອບໃຫ້: ລຳດັບທີ ${currentPersonNum}
+                        </span>
+                        <div class="text-sm mt-2 font-semibold text-slate-500">
+                            (ແຖວທີ ${Math.ceil((currentPersonNum - startNum + 1) / 10)} ກຳລັງ Standby)
+                        </div>
+                    `;
+                } else {
+                    displayPerson.innerHTML = `<span class="inline-block bg-emerald-100 text-emerald-800 px-6 py-2 rounded-full font-bold text-xl shadow-sm border border-emerald-200">🎉 ສຳເລັດພິທີການທັງໝົດ ${totalPeople} ທ່ານ!</span>`;
+                    btnNext.disabled = true;
+                    btnNext.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+
+                // ອັບເດດສະຖິຕິ ແລະ ເສັ້ນສະແດງ
+                const completed = isStarted ? Math.min(currentPersonNum - startNum, totalPeople) : 0;
+                const pending = totalPeople - completed;
+                
+                statCompleted.textContent = completed;
+                statPending.textContent = pending;
+
+                progressChart.data.datasets[0].data = [completed, pending];
+                progressChart.update();
+            }
+
+            btnNext.addEventListener('click', () => {
+                if (!isStarted) {
+                    // ກົດເທື່ອທຳອິດ ເລີ່ມທີ່ຄົນທຳອິດ (ໝາຍເລກ 2)
+                    isStarted = true;
+                    spawnWalker(currentPersonNum);
+                    updateUI();
+                } else {
+                    if (currentPersonNum < endNum) {
+                        currentPersonNum++;
+                        spawnWalker(currentPersonNum); 
+                        updateUI();
+                    } else if (currentPersonNum === endNum) {
+                        currentPersonNum++; // ເພີ່ມຄ່າເພື່ອໃຫ້ກາຍ endNum (ຈົບພິທີ)
+                        updateUI();
+                    }
+                }
+            });
+
+            btnReset.addEventListener('click', () => {
+                currentPersonNum = startNum; // ກັບຄືນໄປເລີ່ມທີ່ເລກ 2
+                isStarted = false;
+                btnNext.disabled = false;
+                btnNext.classList.remove('opacity-50', 'cursor-not-allowed');
+                
+                // ລຶບຄົນທີ່ກຳລັງຍ່າງຄ້າງຢູ່ອອກໃຫ້ໝົດ
+                document.getElementById('animation-track').innerHTML = '';
+                
+                updateUI();
+            });
+
+            // ເອີ້ນໃຊ້ຕອນເລີ່ມຕົ້ນ
+            renderSeats();
+            updateUI(); 
+        });
+    </script>
+</body>
+</html>
